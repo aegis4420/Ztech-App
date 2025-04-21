@@ -92,7 +92,7 @@ struct PriceChanger_Section: View {
             }
             .swipeActions(edge: .trailing){
                 Button{
-                    updatePriceLocally(price)
+                    updatePrice(price)
                 }label:{
                     Image(systemName: "dollarsign.arrow.circlepath")
                         .foregroundColor(.white)

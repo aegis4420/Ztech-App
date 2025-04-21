@@ -21,9 +21,40 @@ struct clientView: View {
     @State var dateofdate: Date = Date()
     @State var showCancel_Bool = false
     @State var appointment_isBooked = true
+    @State private var currentPrice = 0
     @State private var chan: Int = 0
     
     @State private var path = NavigationPath()
+
+    // fetching the current price from DB
+    // data should look like this:
+    // { "price": 45 }
+    func fetchCurrentPrice() {
+        guard let url = URL(string: "https://your-api-url.com/get-price") else {
+            print("Invalid URL")
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching price: \(error.localizedDescription)")
+                return
+            }
+
+            guard let data = data,
+                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let price = json["price"] as? Int else {
+                print("Failed to parse price")
+                return
+            }
+
+            DispatchQueue.main.async {
+                self.currentPrice = price
+            }
+        }.resume()
+    }
+
+
     
     var amColor = Color(red:134/255, green: 171/255, blue: 247/255)
     var pmColor = Color(red:134/255, green: 171/255, blue: 247/255)
@@ -181,7 +212,7 @@ struct clientView: View {
                                         .modifier(CustomTextModifier(size: 18, color: .green))
                                         .bold()
                                     
-                                    Text("30")
+                                    Text(\(currentPrice))
                                         .modifier(CustomTextModifier(size: 20, color: .green))
                                         .bold()
                                 }
@@ -338,6 +369,11 @@ struct clientView: View {
             .scrollIndicators(.hidden)
             .navigationBarBackButtonHidden()
             .edgesIgnoringSafeArea(.bottom)
+
+            // fetch the  current price from the dynamoDB
+            .onAppear {
+                fetchCurrentPrice()
+            }
             .onTapGesture {
                 if showAppointment && !showCancel_Bool{
                     withAnimation{

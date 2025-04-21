@@ -557,9 +557,33 @@ class PendingArrayModel: ObservableObject {
 // MARK: Swipe Trigger Functions (Temporary placeholder for backend call)
 
 // Placeholder function to simulate updating price
-func updatePriceLocally (_ newPrice: Int) {
+func updatePrice (_ newPrice: Int) {
     print("Swipe action triggereed. Intended to update price to : \(newPrice)")
     // TODO: Replace with API call to update price in DynamoDB
+
+    // TODO: Update to the actually API URL to update the database.
+    guard let url = URL(string: "https://your-api-url.com/update-price") else {
+        print("Invalid URL")
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    // Tell the server side I'm sending JSON
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let body: [String: Any] = ["price": newPrice]
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("Failed to update price: \(error.localizedDescription)")
+            return
+        }
+
+        print("Successfully triggered backend to update price: \(newPrice)")
+
+    }.resume()
 }
 
 
